@@ -1,0 +1,43 @@
+.ProjectedScheduleTable {
+    --alpha-not-selected: 0.3;
+    --alpha-selected: 0.9;
+}
+.Fluoxetine {
+    --rgb: 0, 184, 148;
+}
+
+.Citalopram {
+    --rgb: 0, 206, 201;
+}
+
+.Sertraline {
+    --rgb: 9, 132, 195;
+}
+
+.Paroxetine {
+    --rgb: 108, 72, 247;
+}
+
+.Escitalopram {
+    --rgb: 255, 117, 117;
+}
+
+.Fluoxetine,
+.Citalopram,
+.Escitalopram,
+.Paroxetine,
+.Sertraline {
+    background-color: rgba(var(--rgb), var(--alpha-not-selected)) !important;
+}
+
+.PriorDosage {
+    background-color: grey !important;
+}
+.Fluoxetine.ag-row-selected,
+.Citalopram.ag-row-selected,
+.Escitalopram.ag-row-selected,
+.Paroxetine.ag-row-selected,
+.Sertraline.ag-row-selected {
+    background-color: rgba(var(--rgb), var(--alpha-selected)) !important;
+}
+
