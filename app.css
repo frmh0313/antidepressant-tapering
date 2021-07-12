@@ -43,3 +43,13 @@
     background-color: rgba(var(--rgb), var(--alpha-selected)) !important;
 }
 
+/* jomhuria-regular - latin */
+@font-face {
+    font-family: 'Jomhuria';
+    font-style: normal;
+    font-weight: 400;
+    font-display: block;
+    src: local(''),
+    url(/antidepressant-tapering4af284db69a5838428ae.woff2) format('woff2'), /* Chrome 26+, Opera 23+, Firefox 39+ */ url(/antidepressant-tapering6ab99d0e98691b4a8cf9.woff) format('woff');  /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+}
+
