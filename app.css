@@ -43,6 +43,10 @@
     background-color: rgba(var(--rgb), var(--alpha-selected)) !important;
 }
 
+.ag-row-hover {
+    cursor: pointer;
+}
+
 /* jomhuria-regular - latin */
 @font-face {
     font-family: 'Jomhuria';
