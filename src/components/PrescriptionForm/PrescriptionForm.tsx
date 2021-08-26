@@ -78,7 +78,7 @@ const PrescriptionForm: FC<Props> = ({
   };
 
   const {
-    chosenBrand, chosenDrugForm, drugFormOptions,
+    chosenBrand, chosenDrugForm, drugFormOptions, dosageOptions,
     priorDosagesQty, upcomingDosagesQty, allowSplittingUnscoredTablet,
     currentDosageForm, nextDosageForm,
   } = state;
@@ -168,10 +168,11 @@ const PrescriptionForm: FC<Props> = ({
   };
 
   const toggleAllowSplittingUnscoredTabletCheckbox = (e: CheckboxChangeEvent) => {
-    formActionDispatch(toggleAllowSplittingUnscoredTablet({ id: prescribedDrug.id, allow: e.target.checked }));
+    formActionDispatch(toggleAllowSplittingUnscoredTablet({ id: prescribedDrug.id, allow: e.target.checked, dosageOptions: (dosageOptions as CapsuleOrTabletDosage[]) }));
     externalDispatchWrapper(isModal)(toggleAllowSplittingUnscoredTablet({
       id: prescribedDrug.id,
       allow: e.target.checked,
+      dosageOptions: (dosageOptions as CapsuleOrTabletDosage[]),
     }));
   };
 
