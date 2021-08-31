@@ -17,15 +17,17 @@ import {
   CHOOSE_BRAND,
   CHOOSE_FORM,
   FETCH_DRUGS,
-  priorDosageChange,
-  upcomingDosageChange,
+  currentDosageChange,
+  nextDosageChange,
   ChooseFormAction,
   ChooseBrandAction,
   FetchDrugsAction,
-  LOAD_PRESCRIPTION_DATA, toggleAllowSplittingUnscoredTablet, PrescriptionFormActions, SET_IS_MODAL, DrugFormNames,
+  LOAD_PRESCRIPTION_DATA, toggleAllowSplittingUnscoredTablet, PrescriptionFormActions, SET_IS_MODAL,
 } from './actions';
 import { IPrescriptionFormContext, PrescriptionFormState } from './types';
-import { CapsuleOrTabletDosage, OralDosage, PrescribedDrug } from '../../types';
+import {
+  PillDosage, DrugFormNames, OralDosage, PrescribedDrug,
+} from '../../types';
 import {
   CLEAR_SCHEDULE,
   REMOVE_DRUG_FORM,
@@ -42,10 +44,10 @@ export const PrescriptionFormContext = createContext<IPrescriptionFormContext>({
   ...initialState,
   modal: { isModal: false },
   Current: {
-    dosages: initialState.priorDosagesQty,
+    dosages: initialState.currentDosagesQty,
   },
   Next: {
-    dosages: initialState.upcomingDosagesQty,
+    dosages: initialState.nextDosagesQty,
   },
   formActionDispatch: () => {
   },
@@ -79,7 +81,7 @@ const PrescriptionForm: FC<Props> = ({
 
   const {
     chosenBrand, chosenDrugForm, drugFormOptions, dosageOptions,
-    priorDosagesQty, upcomingDosagesQty, allowSplittingUnscoredTablet,
+    currentDosagesQty, nextDosagesQty, allowSplittingUnscoredTablet,
     currentDosageForm, nextDosageForm,
   } = state;
   const { drugs } = useSelector<RootState, TaperConfigState>((state) => state.taperConfig);
@@ -125,14 +127,14 @@ const PrescriptionForm: FC<Props> = ({
     if (value === 'capsule' || value === 'tablet') {
       chooseFormActionData.oralDosageInfo = null;
       // TODO: consider if tablet is scored..?
-      const minDosage = Math.min(...(newChosenDrugForm.dosages as CapsuleOrTabletDosage[])
+      const minDosage = Math.min(...(newChosenDrugForm.dosages as PillDosage[])
         .map((dosage) => parseFloat(dosage.dosage)));
       chooseFormActionData.minDosageUnit = value === 'capsule' ? minDosage : minDosage / 2;
-      chooseFormActionData.regularDosageOptions = (newChosenDrugForm.dosages as CapsuleOrTabletDosage[])
+      chooseFormActionData.regularDosageOptions = (newChosenDrugForm.dosages as PillDosage[])
         .map((option) => option.dosage);
       chooseFormActionData.availableDosageOptions = [
         ...new Set(
-          (newChosenDrugForm.dosages as CapsuleOrTabletDosage[])
+          (newChosenDrugForm.dosages as PillDosage[])
             .flatMap((option) => {
               if (option.isScored) {
                 return [`${parseFloat(option.dosage) / 2} ${newChosenDrugForm.measureUnit}`, option.dosage];
@@ -168,11 +170,11 @@ const PrescriptionForm: FC<Props> = ({
   };
 
   const toggleAllowSplittingUnscoredTabletCheckbox = (e: CheckboxChangeEvent) => {
-    formActionDispatch(toggleAllowSplittingUnscoredTablet({ id: prescribedDrug.id, allow: e.target.checked, dosageOptions: (dosageOptions as CapsuleOrTabletDosage[]) }));
+    formActionDispatch(toggleAllowSplittingUnscoredTablet({ id: prescribedDrug.id, allow: e.target.checked, dosageOptions: (dosageOptions as PillDosage[]) }));
     externalDispatchWrapper(isModal)(toggleAllowSplittingUnscoredTablet({
       id: prescribedDrug.id,
       allow: e.target.checked,
-      dosageOptions: (dosageOptions as CapsuleOrTabletDosage[]),
+      dosageOptions: (dosageOptions as PillDosage[]),
     }));
   };
 
@@ -182,12 +184,12 @@ const PrescriptionForm: FC<Props> = ({
       id: prescribedDrug.id,
       modal: { isModal, modalDispatch },
       Current: {
-        dosages: priorDosagesQty,
-        dosageChangeAction: priorDosageChange,
+        dosages: currentDosagesQty,
+        dosageChangeAction: currentDosageChange,
       },
       Next: {
-        dosages: upcomingDosagesQty,
-        dosageChangeAction: upcomingDosageChange,
+        dosages: nextDosagesQty,
+        dosageChangeAction: nextDosageChange,
       },
       formActionDispatch,
     }}

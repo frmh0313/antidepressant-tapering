@@ -8,8 +8,7 @@ import { css } from '@emotion/react';
 import { PrescriptionFormContext } from './PrescriptionForm';
 import { TaperConfigActions } from '../../redux/reducers/taperConfig';
 import {
-  DrugFormNames,
-  priorDosageChange, PriorDosageChangeAction, upcomingDosageChange, UpcomingDosageChangeAction,
+  currentDosageChange, CurrentDosageChangeAction, nextDosageChange, NextDosageChangeAction,
 } from './actions';
 import {
   ArrowDown, ArrowUp, CapsuleIcon, ScoredTabletIcon, UnscoredTabletIcon,
@@ -23,7 +22,7 @@ interface Props {
   isScored?: boolean;
 }
 
-const CapsuleOrTabletUnit: FC<Props> = ({
+const PillUnit: FC<Props> = ({
   time, form, dosage, isScored, editable,
 }) => {
   const context = useContext(PrescriptionFormContext);
@@ -32,7 +31,7 @@ const CapsuleOrTabletUnit: FC<Props> = ({
   } = context;
   const { dosages } = context[time];
   const taperConfigActionDispatch = useDispatch<Dispatch<TaperConfigActions>>();
-  const dispatch = (action: UpcomingDosageChangeAction | PriorDosageChangeAction) => {
+  const dispatch = (action: NextDosageChangeAction | CurrentDosageChangeAction) => {
     if (isModal) {
       formActionDispatch(action);
       modalDispatch!(action);
@@ -62,9 +61,9 @@ const CapsuleOrTabletUnit: FC<Props> = ({
 
     if (actionData.dosage.quantity >= 0) {
       if (time === 'Next') {
-        dispatch(upcomingDosageChange(actionData));
+        dispatch(nextDosageChange(actionData));
       } else {
-        dispatch(priorDosageChange(actionData));
+        dispatch(currentDosageChange(actionData));
       }
     }
   }, [dosages, intervalDurationDays, allowSplittingUnscoredTablet]);
@@ -80,9 +79,9 @@ const CapsuleOrTabletUnit: FC<Props> = ({
 
     if (actionData.dosage.quantity >= 0) {
       if (time === 'Next') {
-        dispatch(upcomingDosageChange(actionData));
+        dispatch(nextDosageChange(actionData));
       } else {
-        dispatch(priorDosageChange(actionData));
+        dispatch(currentDosageChange(actionData));
       }
     }
   }, [dosages, intervalDurationDays, allowSplittingUnscoredTablet]);
@@ -144,4 +143,4 @@ const CapsuleOrTabletUnit: FC<Props> = ({
   );
 };
 
-export default CapsuleOrTabletUnit;
+export default PillUnit;

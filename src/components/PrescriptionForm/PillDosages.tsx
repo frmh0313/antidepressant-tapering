@@ -3,9 +3,9 @@ import {
   FC, useContext,
 } from 'react';
 import { css } from '@emotion/react';
-import CapsuleOrTabletUnit from './CapsuleOrTabletUnit';
+import PillUnit from './PillUnit';
 import { PrescriptionFormContext } from './PrescriptionForm';
-import { CapsuleOrTabletDosage } from '../../types';
+import { PillDosage } from '../../types';
 import useDosageSumDifferenceMessage from '../../hooks/useDosageSumDifferenceMessage';
 import SelectGrowth from './SelectGrowth';
 
@@ -14,14 +14,14 @@ interface Props {
   editable: boolean;
 }
 
-const CapsuleOrTabletDosages: FC<Props> = ({ time, editable }) => {
+const PillDosages: FC<Props> = ({ time, editable }) => {
   const context = useContext(PrescriptionFormContext);
   const {
-    chosenDrugForm, dosageOptions, priorDosageSum, upcomingDosageSum, growth,
+    chosenDrugForm, dosageOptions, currentDosageSum, nextDosageSum, growth,
     currentDosageForm, nextDosageForm,
     currentDosageOptions, nextDosageOptions,
   } = context;
-  const dosageDifferenceMessage = useDosageSumDifferenceMessage(time, priorDosageSum, upcomingDosageSum, growth);
+  const dosageDifferenceMessage = useDosageSumDifferenceMessage(time, currentDosageSum, nextDosageSum, growth);
 
   return (
     <>
@@ -41,10 +41,11 @@ const CapsuleOrTabletDosages: FC<Props> = ({ time, editable }) => {
             width: 400px;
             margin-left: 64px;`}>
             {/* {(dosageOptions as CapsuleOrTabletDosage[]) */}
-            {((time === 'Current' ? currentDosageOptions : nextDosageOptions) as CapsuleOrTabletDosage[])
+            {((time === 'Current' ? currentDosageOptions : nextDosageOptions) as PillDosage[])
               .map((v: { dosage: string; isScored?: boolean }) => (
-                <CapsuleOrTabletUnit
-                  key={`${time}_${chosenDrugForm!.form}_${v.dosage}`}
+                <PillUnit
+                  // key={`${time}_${chosenDrugForm!.form}_${v.dosage}`}
+                  key={time === 'Current' ? `Current_${currentDosageForm}_${v.dosage}` : `Next_${nextDosageForm}_${v.dosage}`}
                   time={time}
                   editable={editable}
                   form={time === 'Current' ? (currentDosageForm as 'capsule' | 'tablet') : (nextDosageForm as 'capsule' | 'tablet')}
@@ -68,7 +69,7 @@ const CapsuleOrTabletDosages: FC<Props> = ({ time, editable }) => {
             <div>
               Total:
               {/* {dosageSum} */}
-              {time === 'Next' ? upcomingDosageSum : priorDosageSum}
+              {time === 'Next' ? nextDosageSum : currentDosageSum}
               {' '}
               {chosenDrugForm!.measureUnit}
             </div>
@@ -79,4 +80,4 @@ const CapsuleOrTabletDosages: FC<Props> = ({ time, editable }) => {
     </>
   );
 };
-export default CapsuleOrTabletDosages;
+export default PillDosages;

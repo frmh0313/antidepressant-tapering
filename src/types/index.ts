@@ -1,6 +1,5 @@
 import { Schedule } from '../components/Schedule/ProjectedSchedule';
 import { ScheduleChartData } from '../utils/taperConfig';
-import { DrugFormNames } from '../components/PrescriptionForm/actions';
 
 export interface Clinician {
   id: number;
@@ -31,7 +30,7 @@ export interface TaperingConfiguration {
   projectedSchedule: Schedule;
   instructionsForPatient: string;
   instructionsForPharmacy: string;
-  finalPrescription: Prescription;
+  finalPrescription: Prescriptions;
   scheduleChartData: ScheduleChartData;
 }
 
@@ -46,21 +45,25 @@ export interface DrugOption {
   forms: DrugForm[]
 }
 
-export interface CapsuleOrTabletForm {
-  form: 'capsule' | 'tablet';
+export type OralFormNames = 'oral solution' | 'oral suspension';
+export type PillFormNames = 'capsule' | 'tablet';
+// export type DrugFormNames = 'capsule' | 'tablet' | 'oral solution' | 'oral suspension';
+export type DrugFormNames = OralFormNames | PillFormNames;
+export interface PillForm {
+  form: PillFormNames;
   measureUnit: string;
-  dosages: CapsuleOrTabletDosage[];
+  dosages: PillDosage[];
 }
 
 export interface OralForm {
-  form: 'oral solution' | 'oral suspension';
+  form: OralFormNames;
   measureUnit: string;
   dosages: OralDosage;
 }
 
-export type DrugForm = CapsuleOrTabletForm | OralForm;
+export type DrugForm = PillForm | OralForm;
 
-export interface CapsuleOrTabletDosage {
+export interface PillDosage {
   dosage: string;
   isScored?: boolean;
 }
@@ -70,7 +73,7 @@ export interface OralDosage {
   bottles: string[]
 }
 
-export const isCapsuleOrTablet = (form: DrugForm | PrescribedDrug): form is CapsuleOrTabletForm => {
+export const isCapsuleOrTablet = (form: DrugForm | PrescribedDrug): form is PillForm => {
   return form.form === 'tablet' || form.form === 'capsule';
 };
 
@@ -104,13 +107,13 @@ export interface PrescribedDrug {
    * unless drug name or brand are not changed.
    */
   allowChangePriorDosage: boolean;
-  priorDosages: { dosage: string; quantity: number }[];
-  upcomingDosages: { dosage: string; quantity: number }[];
+  currentDosages: { dosage: string; quantity: number }[];
+  nextDosages: { dosage: string; quantity: number }[];
   /**
    * priorDosageSum, upcomingDosageSum are used only in modal
    */
-  priorDosageSum: number;
-  upcomingDosageSum: number;
+  currentDosageSum: number;
+  nextDosageSum: number;
   targetDosage: number;
   growth: 'linear' | 'exponential';
   intervalStartDate: Date;
@@ -121,30 +124,34 @@ export interface PrescribedDrug {
   allowSplittingUnscoredTablet: boolean;
   prevVisit: boolean;
   prescribedAt: Date;
-  oralDosageInfo?: OralDosage | null;
+  oralDosageInfo: OralDosage | null;
+  currentOralDosageInfo: OralDosage | null;
+  nextOralDosageInfo: OralDosage|null;
 }
 
 export interface Prescription {
-  [drugName: string]: {
-    // name: string,
-    brand: string,
-    form: DrugFormNames | null,
-    oralDosageInfo: OralDosage | null;
-    /*
-    // available options for capsule or tablet
-    availableDosages: string[];
-     */
-    regularDosageOptions: string[];
-    dosageQty: { [dosage: string]: number }
-  }
+  // name: string,
+  brand: string,
+  form: DrugFormNames | null,
+  oralDosageInfo: OralDosage | null;
+  /*
+  // available options for capsule or tablet
+  availableDosages: string[];
+   */
+  regularDosageOptions: string[];
+  dosageQty: { [dosage: string]: number }
+}
+
+export interface Prescriptions {
+  [drugName: string]: Prescription[];
 }
 
 export type ValueOf<T> = T[keyof T];
 
 export interface Converted extends PrescribedDrug {
   intervalEndDate: Date;
-  priorDosageSum: number;
-  upcomingDosageSum: number;
+  currentDosageSum: number;
+  nextDosageSum: number;
   changeRate: number;
   changeAmount: number;
   // isIncreasing: boolean;
@@ -167,7 +174,7 @@ export interface TableRowData {
       intervalCount: number;
       intervalUnit: 'Days' | 'Weeks' | 'Months' | null;
       intervalDurationDays: number;
-      oralDosageInfo?: OralDosage
+      oralDosageInfo: OralDosage | null;
       dosage: { [dosage: string]: number },
     }
   } | null;
@@ -184,7 +191,7 @@ export interface TableRowData {
    */
   regularDosageOptions: string[] | null;
   /**
-   * dosages counts from upcoming dosages
+   * dosages counts from next dosages
    * or minimum quantity calculation without considering intervalDurationDays
    */
   unitDosages: { [dosage: string]: number } | null,
@@ -192,7 +199,9 @@ export interface TableRowData {
   intervalDurationDays: number,
   intervalCount: number,
   intervalUnit: 'Days' | 'Weeks' | 'Months' | null,
-  oralDosageInfo?: OralDosage,
+  oralDosageInfo: OralDosage | null,
+  currentOralDosageInfo: OralDosage | null,
+  nextOralDosageInfo: OralDosage | null,
   measureUnit: string,
   form: DrugFormNames | null,
   currentDosageForm: DrugFormNames | null,

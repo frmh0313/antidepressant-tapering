@@ -3,12 +3,10 @@ import {
   initialState,
 } from './reducer';
 import {
-  DrugFormNames,
   PrescriptionFormActions,
 } from './actions';
 import {
-  CapsuleOrTabletDosage,
-  Drug, DrugForm, DrugOption, OralDosage,
+  PillDosage, Drug, DrugForm, DrugFormNames, DrugOption, OralDosage,
 } from '../../types';
 import { ModalActions } from '../Schedule/Modal/modalReducer';
 
@@ -25,12 +23,12 @@ export interface PrescriptionFormState {
    */
   currentDosageForm: DrugFormNames | null;
   nextDosageForm: DrugFormNames | null;
-  currentDosageOptions: CapsuleOrTabletDosage[] | OralDosage;
-  nextDosageOptions: CapsuleOrTabletDosage[] | OralDosage;
+  currentDosageOptions: PillDosage[] | OralDosage;
+  nextDosageOptions: PillDosage[] | OralDosage;
 
   brandOptions: DrugOption[] | null;
   drugFormOptions: DrugForm[] | null;
-  dosageOptions: CapsuleOrTabletDosage[]| OralDosage;
+  dosageOptions: PillDosage[]| OralDosage;
   /**
    * available dosage options including splitting tablet
    */
@@ -42,13 +40,15 @@ export interface PrescriptionFormState {
   regularDosageOptions: string[]|null;
   isModal: boolean;
   minDosageUnit: number;
-  priorDosagesQty: { [key: string]: number };
-  priorDosageSum: number;
-  upcomingDosagesQty: { [key: string]: number };
-  upcomingDosageSum: number;
+  currentDosagesQty: { [key: string]: number };
+  currentDosageSum: number;
+  nextDosagesQty: { [key: string]: number };
+  nextDosageSum: number;
   goalDosage: number;
   allowSplittingUnscoredTablet: boolean;
-  oralDosageInfo: { rate: { mg: number, ml: number }, bottles: string[] } | null;
+  oralDosageInfo: OralDosage | null;
+  currentOralDosageInfo: OralDosage | null;
+  nextOralDosageInfo: OralDosage | null;
   intervalStartDate: Date;
   intervalEndDate: Date | null;
   intervalUnit: 'Days'|'Weeks'|'Months';
@@ -61,10 +61,10 @@ export type IPrescriptionFormContext = PrescriptionFormState
 & {
   modal: { isModal: boolean, modalDispatch?: Dispatch<ModalActions> }
   Current: {
-    dosages: typeof initialState.priorDosagesQty,
+    dosages: typeof initialState.currentDosagesQty,
   };
   Next: {
-    dosages: typeof initialState.upcomingDosagesQty,
+    dosages: typeof initialState.nextDosagesQty,
   };
   formActionDispatch: Dispatch<PrescriptionFormActions>;
   id: number;

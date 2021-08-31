@@ -11,7 +11,7 @@ import { TaperConfigActions } from '../../redux/reducers/taperConfig';
 import { OralDosage } from '../../types';
 import useDosageSumDifferenceMessage from '../../hooks/useDosageSumDifferenceMessage';
 import {
-  priorDosageChange, PriorDosageChangeAction, upcomingDosageChange, UpcomingDosageChangeAction,
+  currentDosageChange, CurrentDosageChangeAction, nextDosageChange, NextDosageChangeAction,
 } from './actions';
 import SelectGrowth from './SelectGrowth';
 
@@ -28,17 +28,20 @@ const OralFormDosage: FC<Props> = ({ time, editable }) => {
   const context = useContext(PrescriptionFormContext);
   const taperConfigActionDispatch = useDispatch<Dispatch<TaperConfigActions>>();
   const {
-    formActionDispatch, id, chosenDrugForm, upcomingDosagesQty,
-    priorDosageSum, upcomingDosageSum, growth,
-    intervalDurationDays, oralDosageInfo, modal: { isModal, modalDispatch },
+    formActionDispatch, id, chosenDrugForm, nextDosagesQty,
+    currentDosageSum, nextDosageSum, growth, currentOralDosageInfo, nextOralDosageInfo,
+    intervalDurationDays, modal: { isModal, modalDispatch },
   } = context;
   const { dosages } = context[time];
   const dosage = useRef('1mg');
-  const [mlDosage, setmlDosage] = useState<number | undefined>((dosages['1mg'] / oralDosageInfo!.rate.mg) * oralDosageInfo!.rate.ml);
+  const oralDosageInfo = useRef<OralDosage>(time === 'Current' ? currentOralDosageInfo! : nextOralDosageInfo!);
+  console.log('time: ', time, 'currentOralDosageInfo: ', currentOralDosageInfo, 'nextOralDosageInfo: ', nextOralDosageInfo, 'oralDosageInfo: ', oralDosageInfo);
+  const [mlDosage, setmlDosage] = useState<number | undefined>((dosages['1mg'] / oralDosageInfo!.current.rate.mg) * oralDosageInfo!.current.rate.ml);
+  // const [mlDosage, setmlDosage] = useState<number | undefined>((dosages['1mg'] / oralDosageInfo!.rate.mg) * oralDosageInfo!.rate.ml);
   const [mgDosage, setmgDosage] = useState<number | undefined>(dosages['1mg']);
 
-  const dosageDifferenceMessage = useDosageSumDifferenceMessage(time, priorDosageSum, upcomingDosageSum, growth);
-  const dispatch = (action: UpcomingDosageChangeAction | PriorDosageChangeAction) => {
+  const dosageDifferenceMessage = useDosageSumDifferenceMessage(time, currentDosageSum, nextDosageSum, growth);
+  const dispatch = (action: NextDosageChangeAction | CurrentDosageChangeAction) => {
     if (isModal) {
       formActionDispatch(action);
       modalDispatch!(action);
@@ -49,10 +52,8 @@ const OralFormDosage: FC<Props> = ({ time, editable }) => {
   };
 
   const mgOnChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    console.group('OralFormDosage.mgOnChange');
     const { rate } = chosenDrugForm!.dosages as OralDosage;
     const mg = parseInt(e.target.value, 10);
-    console.log('mg: ', mg);
 
     if (Number.isNaN(mg)) {
       setmlDosage(undefined);
@@ -63,25 +64,22 @@ const OralFormDosage: FC<Props> = ({ time, editable }) => {
       setmlDosage(ml);
     }
 
-    const actionData: UpcomingDosageChangeAction['data'] | PriorDosageChangeAction['data'] = {
+    const actionData: NextDosageChangeAction['data'] | CurrentDosageChangeAction['data'] = {
       id,
       dosage: { dosage: dosage.current, quantity: Number.isNaN(mg) ? 0 : mg },
     };
 
     if (actionData.dosage.quantity >= 0) {
       if (time === 'Next') {
-        dispatch(upcomingDosageChange(actionData));
+        dispatch(nextDosageChange(actionData));
       } else {
-        dispatch(priorDosageChange(actionData));
+        dispatch(currentDosageChange(actionData));
       }
     }
-    console.groupEnd();
-  }, [chosenDrugForm, intervalDurationDays, priorDosageSum, upcomingDosageSum, oralDosageInfo]);
+  }, [chosenDrugForm, intervalDurationDays, currentDosageSum, nextDosageSum, oralDosageInfo, currentOralDosageInfo, nextOralDosageInfo]);
 
   const mlOnChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    console.group('OralFormDosage.mlOnChange');
     const ml = parseInt(e.target.value, 10);
-    console.log('ml: ', ml);
     const { rate } = chosenDrugForm!.dosages as OralDosage;
     const mg = Number.isNaN(ml) ? undefined : (ml / rate.ml) * rate.mg;
 
@@ -89,28 +87,23 @@ const OralFormDosage: FC<Props> = ({ time, editable }) => {
       setmlDosage(undefined);
       setmgDosage(undefined);
     } else {
-      console.log('mlDosage before change: ', mlDosage);
       setmlDosage(ml);
-      console.log('mlDosage after change: ', mlDosage);
-      console.log('mgDosage before change: ', mgDosage);
       setmgDosage(mg);
-      console.log('mgDosage after change: ', mgDosage);
     }
 
-    const actionData: UpcomingDosageChangeAction['data'] | PriorDosageChangeAction['data'] = {
+    const actionData: NextDosageChangeAction['data'] | CurrentDosageChangeAction['data'] = {
       id,
       dosage: { dosage: dosage.current, quantity: mg === undefined ? 0 : mg },
     };
 
     if (actionData.dosage.quantity >= 0) {
       if (time === 'Next') {
-        dispatch(upcomingDosageChange(actionData));
+        dispatch(nextDosageChange(actionData));
       } else {
-        dispatch(priorDosageChange(actionData));
+        dispatch(currentDosageChange(actionData));
       }
     }
-    console.groupEnd();
-  }, [chosenDrugForm, intervalDurationDays, priorDosageSum, upcomingDosageSum, oralDosageInfo]);
+  }, [chosenDrugForm, intervalDurationDays, currentDosageSum, nextDosageSum, oralDosageInfo, currentOralDosageInfo, nextOralDosageInfo]);
 
   return (
     <>
@@ -158,7 +151,7 @@ const OralFormDosage: FC<Props> = ({ time, editable }) => {
             )}
             <div>
               Total:
-              {time === 'Next' ? upcomingDosageSum : priorDosageSum}
+              {time === 'Next' ? nextDosageSum : currentDosageSum}
               {' '}
               {chosenDrugForm!.measureUnit}
             </div>
